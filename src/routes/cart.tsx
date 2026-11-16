@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 
 import { AppShell } from "@/components/anga/AppShell";
+import { BackButton, BackIcon } from "@/components/anga/BackButton";
 import { ClosedNotice, LoadingBlock, NoSession } from "@/components/anga/Notices";
 import { QuantityStepper } from "@/components/anga/QuantityStepper";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ function CartPage() {
 
   if (!hydrated) {
     return (
-      <AppShell backTo="/menu" backLabel="Back to menu">
+      <AppShell back={<BackButton><Link to="/menu" aria-label="Back to menu"><BackIcon /></Link></BackButton>} showContext>
         <LoadingBlock />
       </AppShell>
     );
@@ -55,7 +56,7 @@ function CartPage() {
   const summary = summarizeCart(cart.lines);
 
   return (
-    <AppShell backTo="/menu" backLabel="Back to menu">
+    <AppShell back={<BackButton><Link to="/menu" aria-label="Back to menu"><BackIcon /></Link></BackButton>} showContext>
       <h1 className="font-display text-2xl font-bold">Your cart</h1>
       <p className="mt-2 flex items-center gap-2 text-base text-muted-foreground">
         <MapPin aria-hidden className="size-4 shrink-0" />

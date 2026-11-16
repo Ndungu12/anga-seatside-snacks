@@ -186,7 +186,8 @@ function OrderCard({ order, now }: { order: Order; now: number }) {
         <div>
           <p className="text-sm text-muted-foreground">Seat</p>
           <p className="font-display text-4xl font-extrabold leading-none">{order.seat}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-base font-semibold">{order.film}</p>
+          <p className="text-sm text-muted-foreground">
             {VENUES[order.venue]} · Screen {order.screen}
           </p>
         </div>

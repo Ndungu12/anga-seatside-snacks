@@ -3,6 +3,7 @@ import { Check, CircleHelp, CircleX } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell } from "@/components/anga/AppShell";
+import { BackButton, BackIcon } from "@/components/anga/BackButton";
 import { LoadingBlock } from "@/components/anga/Notices";
 import {
   AlertDialog,
@@ -72,7 +73,7 @@ function OrderPage() {
 
   if (!order) {
     return (
-      <AppShell backTo="/menu" backLabel="Back to menu">
+      <AppShell back={<BackButton><Link to="/menu" aria-label="Back to menu"><BackIcon /></Link></BackButton>}>
         <h1 className="font-display text-2xl font-bold">Order not found</h1>
         <p className="mt-2 text-base text-muted-foreground">
           We can't find this order on this phone. Ask an usher if you need help.
@@ -89,14 +90,15 @@ function OrderPage() {
   const cancellable = canCancel(order.status) && order.payment === "paid";
 
   return (
-    <AppShell backTo="/menu" backLabel="Back to menu">
+    <AppShell back={<BackButton><Link to="/menu" aria-label="Back to menu"><BackIcon /></Link></BackButton>}>
       <p className="text-sm text-muted-foreground">Order #{order.code}</p>
       <div role="status" aria-live="polite">
         <h1 className="font-display text-3xl font-bold">
           {cancelled ? "Order cancelled" : STATUS_LABEL[order.status]}
         </h1>
       </div>
-      <p className="mt-1 text-base text-muted-foreground">
+      <p className="mt-1 text-base font-semibold">{order.film}</p>
+      <p className="text-base text-muted-foreground">
         Seat {order.seat}, screen {order.screen}, {VENUES[order.venue]}
       </p>
 

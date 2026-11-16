@@ -3,6 +3,7 @@ import { CircleAlert, CircleCheck, LoaderCircle, Smartphone } from "lucide-react
 import { useEffect, useRef, useState } from "react";
 
 import { AppShell } from "@/components/anga/AppShell";
+import { BackButton, BackIcon } from "@/components/anga/BackButton";
 import { ClosedNotice, LoadingBlock, NoSession } from "@/components/anga/Notices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,7 +68,7 @@ function PayPage() {
 
   if (!hydrated) {
     return (
-      <AppShell backTo="/cart" backLabel="Back to cart">
+      <AppShell back={<BackButton><Link to="/cart" aria-label="Back to cart"><BackIcon /></Link></BackButton>} showContext>
         <LoadingBlock />
       </AppShell>
     );
@@ -144,7 +145,7 @@ function PayPage() {
 
   if (summary.count === 0) {
     return (
-      <AppShell backTo="/menu" backLabel="Back to menu">
+      <AppShell back={<BackButton><Link to="/menu" aria-label="Back to menu"><BackIcon /></Link></BackButton>} showContext>
         <div className="mt-10 text-center">
           <p className="text-lg">Your cart is empty.</p>
           <Button asChild variant="accent" className="mt-4">
@@ -186,7 +187,7 @@ function PayPage() {
   }
 
   return (
-    <AppShell backTo="/cart" backLabel="Back to cart">
+    <AppShell back={<BackButton><Link to="/cart" aria-label="Back to cart"><BackIcon /></Link></BackButton>} showContext>
       <h1 className="font-display text-2xl font-bold">Pay with M-Pesa</h1>
       <div className="mt-4 flex items-baseline justify-between rounded-2xl border border-border bg-card p-4">
         <p className="text-base text-muted-foreground">

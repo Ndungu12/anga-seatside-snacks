@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell } from "@/components/anga/AppShell";
+import { BackButton, BackIcon } from "@/components/anga/BackButton";
 import { CartBar } from "@/components/anga/CartBar";
 import {
   ClosedNotice,
@@ -51,7 +52,7 @@ function MenuPage() {
 
   if (!hydrated) {
     return (
-      <AppShell backTo="/" backLabel="Back to your seat">
+      <AppShell>
         <LoadingBlock />
       </AppShell>
     );
@@ -70,8 +71,8 @@ function MenuPage() {
 
   return (
     <AppShell
-      backTo="/"
-      backLabel="Back to your seat"
+      showContext
+      back={<BackButton><Link to="/seat" search={{ screening: session.screeningId }} aria-label="Change seat"><BackIcon /></Link></BackButton>}
       footer={<CartBar count={summary.count} total={summary.total} closed={orderWindow.closed} />}
     >
       {activeOrder ? (
@@ -105,7 +106,7 @@ function MenuPage() {
       <div
         role="tablist"
         aria-label="Menu categories"
-        className="no-scrollbar sticky top-16 z-10 -mx-4 mt-5 flex gap-2 overflow-x-auto bg-background px-4 py-3"
+        className="no-scrollbar sticky top-[102px] z-10 -mx-4 mt-5 flex gap-2 overflow-x-auto bg-background px-4 py-3"
       >
         {CATEGORIES.map((c) => {
           const selected = c.id === category;
