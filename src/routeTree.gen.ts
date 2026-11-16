@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as MenuRouteImport } from './routes/menu'
 import { Route as PayRouteImport } from './routes/pay'
+import { Route as SeatRouteImport } from './routes/seat'
+import { Route as ShowRouteImport } from './routes/show'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as OrderOrderIdRouteImport } from './routes/order.$orderId'
 
@@ -36,6 +38,16 @@ const PayRoute = PayRouteImport.update({
   path: '/pay',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SeatRoute = SeatRouteImport.update({
+  id: '/seat',
+  path: '/seat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShowRoute = ShowRouteImport.update({
+  id: '/show',
+  path: '/show',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffRoute = StaffRouteImport.update({
   id: '/staff',
   path: '/staff',
@@ -52,6 +64,8 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/menu': typeof MenuRoute
   '/pay': typeof PayRoute
+  '/seat': typeof SeatRoute
+  '/show': typeof ShowRoute
   '/staff': typeof StaffRoute
   '/order/$orderId': typeof OrderOrderIdRoute
 }
@@ -60,6 +74,8 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/menu': typeof MenuRoute
   '/pay': typeof PayRoute
+  '/seat': typeof SeatRoute
+  '/show': typeof ShowRoute
   '/staff': typeof StaffRoute
   '/order/$orderId': typeof OrderOrderIdRoute
 }
@@ -69,16 +85,42 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/menu': typeof MenuRoute
   '/pay': typeof PayRoute
+  '/seat': typeof SeatRoute
+  '/show': typeof ShowRoute
   '/staff': typeof StaffRoute
   '/order/$orderId': typeof OrderOrderIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cart' | '/menu' | '/pay' | '/staff' | '/order/$orderId'
+  fullPaths:
+    | '/'
+    | '/cart'
+    | '/menu'
+    | '/pay'
+    | '/seat'
+    | '/show'
+    | '/staff'
+    | '/order/$orderId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cart' | '/menu' | '/pay' | '/staff' | '/order/$orderId'
+  to:
+    | '/'
+    | '/cart'
+    | '/menu'
+    | '/pay'
+    | '/seat'
+    | '/show'
+    | '/staff'
+    | '/order/$orderId'
   id:
-    '__root__' | '/' | '/cart' | '/menu' | '/pay' | '/staff' | '/order/$orderId'
+    | '__root__'
+    | '/'
+    | '/cart'
+    | '/menu'
+    | '/pay'
+    | '/seat'
+    | '/show'
+    | '/staff'
+    | '/order/$orderId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -86,6 +128,8 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   MenuRoute: typeof MenuRoute
   PayRoute: typeof PayRoute
+  SeatRoute: typeof SeatRoute
+  ShowRoute: typeof ShowRoute
   StaffRoute: typeof StaffRoute
   OrderOrderIdRoute: typeof OrderOrderIdRoute
 }
@@ -120,6 +164,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seat': {
+      id: '/seat'
+      path: '/seat'
+      fullPath: '/seat'
+      preLoaderRoute: typeof SeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/show': {
+      id: '/show'
+      path: '/show'
+      fullPath: '/show'
+      preLoaderRoute: typeof ShowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff': {
       id: '/staff'
       path: '/staff'
@@ -142,6 +200,8 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   MenuRoute: MenuRoute,
   PayRoute: PayRoute,
+  SeatRoute: SeatRoute,
+  ShowRoute: ShowRoute,
   StaffRoute: StaffRoute,
   OrderOrderIdRoute: OrderOrderIdRoute,
 }

@@ -11,8 +11,17 @@ import {
   type WindowOverride,
 } from "./rules";
 
-export type Session = { venue: VenueId; screen: string; seat: string; end: string };
-export type Cart = { seatKey: string; lines: Record<string, number>; note: string; phone: string };
+/** The guest's chosen show and seat. `end` (HH:MM) drives the ordering cutoff. */
+export type Session = {
+  venue: VenueId;
+  screeningId: string;
+  film: string;
+  screen: string;
+  start: string;
+  end: string;
+  seat: string;
+};
+export type Cart = { lines: Record<string, number>; note: string; phone: string };
 export type PaymentStatus = "pending" | "paid" | "failed";
 export type OrderLine = { itemId: string; name: string; price: number; qty: number };
 export type Order = {
@@ -20,6 +29,8 @@ export type Order = {
   code: string;
   venue: VenueId;
   screen: string;
+  film: string;
+  start: string;
   seat: string;
   end: string;
   lines: OrderLine[];
@@ -92,11 +103,11 @@ function createLocalStore<T>(key: string, fallback: T) {
   return { get, set, update, useValue };
 }
 
-const EMPTY_CART: Cart = { seatKey: "", lines: {}, note: "", phone: "" };
+const EMPTY_CART: Cart = { lines: {}, note: "", phone: "" };
 
-export const sessionStore = createLocalStore<Session | null>("anga.session.v1", null);
-export const cartStore = createLocalStore<Cart>("anga.cart.v1", EMPTY_CART);
-export const ordersStore = createLocalStore<Order[]>("anga.orders.v1", []);
+export const sessionStore = createLocalStore<Session | null>("anga.session.v2", null);
+export const cartStore = createLocalStore<Cart>("anga.cart.v2", EMPTY_CART);
+export const ordersStore = createLocalStore<Order[]>("anga.orders.v2", []);
 export const devStore = createLocalStore<DevSettings>("anga.dev.v1", {
   simulateFailure: false,
   windowOverride: "auto",
@@ -107,18 +118,11 @@ export const useCart = cartStore.useValue;
 export const useOrders = ordersStore.useValue;
 export const useDev = devStore.useValue;
 
-export function seatKey(s: Session): string {
-  return `${s.venue}|${s.screen}|${s.seat}`;
-}
-
 // ---- Actions ----
 
+/** Saves the chosen show and seat. The cart is kept, so guests can correct either step. */
 export function startSession(session: Session) {
   sessionStore.set(session);
-  const cart = cartStore.get();
-  if (cart.seatKey !== seatKey(session)) {
-    cartStore.set({ ...EMPTY_CART, phone: cart.phone, seatKey: seatKey(session) });
-  }
 }
 
 export function setQty(itemId: string, qty: number) {
@@ -157,6 +161,8 @@ export function createOrder(session: Session, cart: Cart, phone: string): Order 
     code: randomCode(4),
     venue: session.venue,
     screen: session.screen,
+    film: session.film,
+    start: session.start,
     seat: session.seat,
     end: session.end,
     lines: lines.map((l) => ({ itemId: l.item.id, name: l.item.name, price: l.item.price, qty: l.qty })),
@@ -246,6 +252,7 @@ export function useActiveOrder(session: Session | null): Order | undefined {
     (o) =>
       o.venue === session.venue &&
       o.screen === session.screen &&
+      o.film === session.film &&
       o.seat === session.seat &&
       o.payment === "paid" &&
       o.status !== "delivered" &&

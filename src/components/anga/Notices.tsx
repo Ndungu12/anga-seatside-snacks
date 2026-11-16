@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Clock, QrCode } from "lucide-react";
+import { ChevronRight, Clock, Film } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { VENUES, type VenueId } from "@/lib/data";
 
 export function ClosedNotice({ end, cutoff }: { end: string; cutoff: number }) {
   return (
@@ -38,17 +39,39 @@ export function PlaceholderPriceNote() {
 export function NoSession() {
   return (
     <div className="flex flex-col items-center py-12 text-center">
-      <QrCode aria-hidden className="size-14 text-primary" />
-      <h1 className="mt-4 font-display text-2xl font-bold">Scan the code on your seat</h1>
+      <Film aria-hidden className="size-12 text-primary" />
+      <h1 className="mt-4 font-display text-2xl font-bold">Let's find your show first</h1>
       <p className="mt-2 max-w-xs text-base text-muted-foreground">
-        Each seat has its own code. Scan it with your phone camera to order snacks to your seat.
+        Tell us what you're watching and where you're sitting, then you can order.
       </p>
-      <Button asChild variant="accent" className="mt-8">
-        <Link to="/" search={{ venue: "sky", screen: "2", seat: "F7", end: "21:45" }}>
-          Try a demo seat (Anga Sky, F7)
-        </Link>
+      <Button asChild size="lg" className="mt-8">
+        <Link to="/">Start</Link>
       </Button>
     </div>
+  );
+}
+
+/** Two large buttons to choose a venue. */
+export function VenuePicker() {
+  return (
+    <nav aria-label="Choose your cinema" className="grid gap-3">
+      {(Object.keys(VENUES) as VenueId[]).map((id) => (
+        <Link
+          key={id}
+          to="/show"
+          search={{ venue: id }}
+          className="flex min-h-20 items-center justify-between rounded-2xl border-2 border-border bg-card px-5 py-4 hover:border-primary"
+        >
+          <span>
+            <span className="block text-sm text-muted-foreground">I'm at</span>
+            <span className="font-display text-2xl font-extrabold text-foreground">
+              {VENUES[id]}
+            </span>
+          </span>
+          <ChevronRight aria-hidden className="size-6 text-primary" />
+        </Link>
+      ))}
+    </nav>
   );
 }
 

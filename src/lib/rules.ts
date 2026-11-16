@@ -115,3 +115,53 @@ export function timeAgo(fromMs: number, nowMs: number): string {
   const hours = Math.floor(mins / 60);
   return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
 }
+
+// ---- Show and seat selection ----
+
+/** A screening counts as "current" if it is on now or starts within this many minutes. */
+export const SCREENING_MATCH_MINUTES = 30;
+
+export type ScreeningTime = { start: number; end: number };
+
+export function isCurrentScreening(
+  s: ScreeningTime,
+  nowMinutes: number,
+  window: number = SCREENING_MATCH_MINUTES,
+): boolean {
+  const onNow = s.start <= nowMinutes && nowMinutes < s.end;
+  const startsSoon = s.start > nowMinutes && s.start - nowMinutes <= window;
+  return onNow || startsSoon;
+}
+
+export function findCurrentScreenings<T extends ScreeningTime>(list: T[], nowMinutes: number): T[] {
+  return list.filter((s) => isCurrentScreening(s, nowMinutes)).sort((a, b) => a.start - b.start);
+}
+
+export function screeningTiming(s: ScreeningTime, nowMinutes: number): string {
+  if (s.start <= nowMinutes) return nowMinutes < s.end ? "On now" : "Finished";
+  const mins = s.start - nowMinutes;
+  return mins <= 1 ? "Starting now" : `Starts in ${mins} min`;
+}
+
+export type SeatLayout = { rows: string[]; seatsPerRow: number };
+
+/** Default auditorium: rows A to J, seats 1 to 14. */
+export const DEFAULT_SEAT_LAYOUT: SeatLayout = {
+  rows: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"],
+  seatsPerRow: 14,
+};
+
+/** "f7", "F 7", "F-07" -> { row: "F", number: 7, label: "F7" }. */
+export function parseSeat(input: string): { row: string; number: number; label: string } | null {
+  const m = /^\s*([A-Za-z])\s*-?\s*(\d{1,2})\s*$/.exec(input);
+  if (!m) return null;
+  const row = m[1]!.toUpperCase();
+  const number = Number(m[2]);
+  return { row, number, label: `${row}${number}` };
+}
+
+export function seatExists(layout: SeatLayout, input: string): boolean {
+  const seat = parseSeat(input);
+  if (!seat) return false;
+  return layout.rows.includes(seat.row) && seat.number >= 1 && seat.number <= layout.seatsPerRow;
+}
