@@ -28,3 +28,9 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- Shared mock state lives in `src/lib/store.ts` (localStorage-backed stores via useSyncExternalStore); the guest flow and `/staff` read the same stores so orders sync across tabs without a backend.
+- Business rules (cutoff, status flow, cancel rule, phone format) are pure functions in `src/lib/rules.ts`, tested in `src/test/rules.test.ts`; change rules there, not in components.
+- Pages that read localStorage gate rendering on `useHydrated()` to avoid SSR hydration mismatches.
