@@ -1,8 +1,14 @@
 # Anga Seatside Snacks
 
-Build a mobile-first web app prototype called "Anga Seat Order" for Anga Cinemas in Nairobi (venues: Anga Diamond and Anga Sky). A guest who is already seated scans a seat code and orders snacks and drinks to their seat. Use mock data only: no backend and no real payments.
+Build a mobile-first web app prototype called "Anga Seat Order" for Anga Cinemas in Nairobi (venues: Anga Diamond and Anga Sky). A guest who is already seated scans the venue QR code, picks their show and seat, and orders snacks and drinks to their seat. Use mock data only: no backend and no real payments.
 
-Entry: the app opens from a URL like /?venue=sky&screen=2&seat=F7&end=21:45. Show a confirmation screen with venue, screen, seat and the film end time, and a button "Start order".
+Entry (one QR code per venue, not per seat):
+
+- **Scan.** The venue QR opens `/?venue=diamond` or `/?venue=sky`. Without a venue, the landing page shows two large buttons (Anga Diamond, Anga Sky) and a "Try a demo" link that opens Anga Sky straight at step 2.
+- **Choose your show** (`/show`). "What are you watching?" lists today's films for the venue with search. Picking a film auto-selects the screening that is on now or starts within 30 minutes; if several match, the guest confirms a showtime; if none, "We can't find a current screening. Please ask a member of staff." The schedule is mocked in `src/lib/schedule.ts`; three demo films always have one, two and zero current screenings.
+- **Enter your seat** (`/seat`). Seat grid for the screen (rows A to J, seats 1 to 14) or type a seat like F7; validated against that screen. One seat per order.
+- The menu, cart, payment and tracking pages show the film, screen and seat. Every step has a back button and the cart is kept when the show or seat changes.
+- The cutoff uses the chosen screening's end time.
 
 Screens:
 
@@ -16,7 +22,7 @@ Screens:
 
 5. Closed state: if the current time is within 20 minutes of the film end time, show "Ordering has closed for this show" and disable checkout. Make the 20 minutes a single configurable constant.
 
-Staff view at /staff: a live order queue for the cashier. Each card shows seat, items, payment status and a button to move the order to the next status. New orders appear at the top. Orders placed in the guest view must appear here (shared local state is fine).
+Staff view at /staff: a live order queue for the cashier. Each card shows venue, screen, film, seat, items, payment status and a button to move the order to the next status. New orders appear at the top. Orders placed in the guest view must appear here (shared local state is fine).
 
 Design: dark theme by default, low brightness and high contrast so it doesn't light up a dark auditorium. Large tap targets, no animations that flash, no sound, plain English, Kenyan shilling formatting. Label all prices as placeholders. Accessible labels on all controls. Use a neutral cinema look with a single warm accent colour.
 

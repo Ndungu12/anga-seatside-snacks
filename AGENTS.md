@@ -31,6 +31,22 @@ use the editor.
 
 ## Project rules
 
-- Shared mock state lives in `src/lib/store.ts` (localStorage-backed stores via useSyncExternalStore); the guest flow and `/staff` read the same stores so orders sync across tabs without a backend.
-- Business rules (cutoff, status flow, cancel rule, phone format) are pure functions in `src/lib/rules.ts`, tested in `src/test/rules.test.ts`; change rules there, not in components.
+- Frontend-only prototype: no backend, database, real payments or SMS. "Server" behaviour is simulated in
+  small modules so it can be swapped for real APIs later:
+  `src/lib/mpesa.ts` (STK push + idempotent callback handler; orders become PAID only there),
+  `src/lib/tokens.ts` (signed, expiring admission links; demo key, real signing belongs on a server),
+  `src/lib/admission.ts` (door validation, ordering SMS send/resend), `src/lib/simulate.ts` (incoming orders),
+  `src/lib/activity.ts` (notifications feed derived from orders, requests and SMS).
+- Central mock data: `src/lib/data.ts` (cinemas, 27-item catalogue with photos/options, campaigns, stock),
+  `src/lib/bookings.ts` (mock tickets incl. the sample e-ticket ANGA-93941518), `src/lib/schedule.ts` (screenings).
+  Never hardcode product or booking data in components.
+- Shared state lives in `src/lib/store.ts` (localStorage stores via useSyncExternalStore); guest pages, `/staff`,
+  `/admissions` and `/demo` (iframes) read the same stores, so everything syncs across screens and tabs.
+- Business rules are pure functions in `src/lib/rules.ts`, tested in `src/test/*.test.ts`; change rules there.
 - Pages that read localStorage gate rendering on `useHydrated()` to avoid SSR hydration mismatches.
+- Design system: premium dark everywhere (staff too). Tokens in `src/styles.css`: ANGA Blue #0757B5 for actions,
+  ANGA Yellow #FFD900 for selection/highlights, Manrope headings + Inter text. Use tokens, not raw colours.
+  Official logo: `public/brand/` (use `<AngaLogo>`), never recreate it in CSS.
+- Routes: guest `/` → `/show` → `/seat` → `/menu` → `/cart` → `/pay` → `/order/$id`; entries `/t/$token`
+  (admission SMS), `/q/$code` (seat QR), `/scan`, `/sms`, `/booking`, `/promo`, `/miniapp`;
+  staff `/staff?view=overview|orders|fulfilment|notifications|settings`, `/admissions`, `/signage`; demo `/demo`.

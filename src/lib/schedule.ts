@@ -3,7 +3,14 @@
 import type { VenueId } from "./data";
 import { DEFAULT_SEAT_LAYOUT, parseClock, type SeatLayout } from "./rules";
 
-export type Film = { id: string; title: string; rating: string; runtime: number; demo?: boolean };
+export type Film = {
+  id: string;
+  title: string;
+  rating: string;
+  runtime: number;
+  /** Set on demo films: a short note on what the demo shows. Times move with the clock. */
+  demo?: string;
+};
 export type Screening = {
   id: string;
   venue: VenueId;
@@ -22,9 +29,27 @@ export const FILMS: Record<string, Film> = {
   paws: { id: "paws", title: "Paws & Whiskers", rating: "GE", runtime: 92 },
   signal: { id: "signal", title: "Dead Signal", rating: "18", runtime: 99 },
   // Demo films: their times move with the clock.
-  "demo-rains": { id: "demo-rains", title: "The Long Rains (demo: one screening now)", rating: "PG", runtime: 112, demo: true },
-  "demo-matatu": { id: "demo-matatu", title: "Matatu Express (demo: two screens now)", rating: "16", runtime: 101, demo: true },
-  "demo-owls": { id: "demo-owls", title: "Night Owls (demo: nothing on now)", rating: "16", runtime: 95, demo: true },
+  "demo-rains": {
+    id: "demo-rains",
+    title: "How to Rob a Bank",
+    rating: "PG",
+    runtime: 112,
+    demo: "Demo: one screening now",
+  },
+  "demo-matatu": {
+    id: "demo-matatu",
+    title: "Matatu Express",
+    rating: "16",
+    runtime: 101,
+    demo: "Demo: two screens now",
+  },
+  "demo-owls": {
+    id: "demo-owls",
+    title: "Night Owls",
+    rating: "16",
+    runtime: 95,
+    demo: "Demo: nothing on now",
+  },
 };
 
 export const VENUE_SCREENS: Record<VenueId, number[]> = {
@@ -62,10 +87,21 @@ const PLAN: Record<VenueId, Plan> = {
   ],
 };
 
-function make(venue: VenueId, filmId: string, screen: number, start: number, demo = false): Screening {
+/** "sky.2.demo-matatu.1270". Dots never appear in venue or film ids, so the id parses back. */
+function screeningId(venue: VenueId, screen: number, filmId: string, start: number): string {
+  return `${venue}.${screen}.${filmId}.${start}`;
+}
+
+function make(
+  venue: VenueId,
+  filmId: string,
+  screen: number,
+  start: number,
+  demo = false,
+): Screening {
   const film = FILMS[filmId]!;
   return {
-    id: `${venue}-${screen}-${filmId}-${demo ? "d" : ""}${start}`,
+    id: screeningId(venue, screen, filmId, start),
     venue,
     filmId,
     screen,
@@ -107,8 +143,23 @@ export function getTodaySchedule(venue: VenueId, nowMinutes: number): Screening[
   return [...demoScreenings(venue, nowMinutes), ...STATIC[venue]].sort((a, b) => a.start - b.start);
 }
 
+/**
+ * Looks a screening up by id. Demo screenings move with the clock, so they are rebuilt
+ * from the id itself; otherwise a guest who crosses a half hour would lose their show.
+ */
 export function findScreening(id: string, nowMinutes: number): Screening | undefined {
-  const venue = id.startsWith("diamond-") ? "diamond" : id.startsWith("sky-") ? "sky" : null;
-  if (!venue) return undefined;
+  const [venueRaw, screenRaw, filmId, startRaw, ...rest] = id.split(".");
+  const venue = venueRaw === "diamond" || venueRaw === "sky" ? venueRaw : null;
+  const screen = Number(screenRaw);
+  const start = Number(startRaw);
+  const film = filmId ? FILMS[filmId] : undefined;
+  if (!venue || !film || rest.length || !Number.isInteger(screen) || !Number.isInteger(start)) {
+    return undefined;
+  }
+  if (film.demo) {
+    if (!VENUE_SCREENS[venue].includes(screen) || Math.abs(start - nowMinutes) > 1440)
+      return undefined;
+    return make(venue, film.id, screen, start, true);
+  }
   return getTodaySchedule(venue, nowMinutes).find((s) => s.id === id);
 }

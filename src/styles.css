@@ -9,17 +9,49 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Anga Seat Order design system.
- * Dark by default, low brightness, high contrast: warm near-black surfaces,
- * soft off-white text (no pure white glare), and ONE warm amber accent.
- * All colours are oklch tokens; components use semantic classes only.
+ * ANGA In-Seat design system: premium dark cinema + official ANGA branding.
+ * Brand: ANGA Blue #0757B5, ANGA Yellow #FFD900, ANGA Grey #A6A6A6.
+ * Type: Manrope (headings, prices, seats) + Inter (text and UI).
+ * Spacing scale: 4 · 8 · 12 · 16 · 24 · 32 · 48. Radii: 8 (controls) · 12–16 (cards).
+ *   blue   = primary actions and links
+ *   yellow = selection and "you are here" highlights, never every control
+ *   green / amber / red = success / warning / error, always with text or an icon
+ * Every surface stays dark, guest and staff alike. Components use tokens, never raw colours.
  */
 
 @theme inline {
-  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Archivo", "Atkinson Hyperlegible", ui-sans-serif, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --animate-spin-slow: spin 2.4s linear infinite;
+  --animate-pop: pop 400ms ease-out;
+
+  @keyframes pop {
+    0% {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+    70% {
+      transform: scale(1.06);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Kiosk only: a new order pulses its yellow ring three times, then settles. */
+  --animate-kiosk-flash: kiosk-flash 1s ease-in-out 3;
+
+  @keyframes kiosk-flash {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+    50% {
+      box-shadow: 0 0 0 6px var(--color-highlight);
+    }
+  }
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -37,6 +69,18 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-soft: var(--primary-soft);
+  --color-link: var(--link);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-highlight-soft: var(--highlight-soft);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-elevated: var(--elevated);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-brand-grey: var(--brand-grey);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -67,49 +111,69 @@
 
 :root {
   color-scheme: dark;
-  --radius: 0.875rem;
+  --radius: 0.75rem;
 
-  /* Surfaces: warm charcoal, never pure black (reduces halation) */
-  --background: oklch(0.16 0.006 65);
-  --foreground: oklch(0.91 0.012 85);
-  --card: oklch(0.205 0.007 65);
-  --card-foreground: oklch(0.91 0.012 85);
-  --popover: oklch(0.22 0.008 65);
-  --popover-foreground: oklch(0.91 0.012 85);
+  /* Surfaces */
+  --background: #101114;
+  --surface: #17191d;
+  --surface-2: #202329;
+  --elevated: #282c33;
+  --foreground: #ffffff;
+  --card: #17191d;
+  --card-foreground: #ffffff;
+  --popover: #1b1d22;
+  --popover-foreground: #ffffff;
 
-  /* The single warm accent: dim amber, like a cinema aisle light */
-  --primary: oklch(0.79 0.13 72);
-  --primary-foreground: oklch(0.18 0.02 60);
-  --primary-soft: oklch(0.79 0.13 72 / 14%);
+  /* ANGA Blue: primary actions (white text 6.9:1) */
+  --primary: #0757b5;
+  --primary-foreground: #ffffff;
+  --primary-soft: rgb(7 87 181 / 0.18);
+  --link: #6ea8f2; /* ANGA blue lifted for text on dark (7.6:1) */
 
-  --secondary: oklch(0.265 0.008 65);
-  --secondary-foreground: oklch(0.91 0.012 85);
-  --muted: oklch(0.235 0.007 65);
-  --muted-foreground: oklch(0.74 0.012 80);
-  --accent: oklch(0.29 0.02 70);
-  --accent-foreground: oklch(0.91 0.012 85);
+  /* ANGA Yellow: selection and highlights */
+  --highlight: #ffd900;
+  --highlight-foreground: #101114;
+  --highlight-soft: rgb(255 217 0 / 0.12);
 
-  --destructive: oklch(0.72 0.15 28);
-  --destructive-foreground: oklch(0.17 0.02 30);
-  --destructive-soft: oklch(0.72 0.15 28 / 14%);
+  --brand-grey: #a6a6a6;
+  --secondary: #202329;
+  --secondary-foreground: #ffffff;
+  --muted: #202329;
+  --muted-foreground: #b7bbc2;
+  --accent: #282c33;
+  --accent-foreground: #ffffff;
 
-  --border: oklch(0.33 0.008 65);
-  --input: oklch(0.4 0.008 65);
-  --ring: oklch(0.79 0.13 72);
+  --success: #34a272;
+  --success-soft: rgb(39 134 92 / 0.18);
+  --warning: #e0a443;
+  --warning-soft: rgb(217 154 50 / 0.16);
+  --destructive: #e05f5f;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: rgb(211 75 75 / 0.16);
 
-  --chart-1: oklch(0.79 0.13 72);
-  --chart-2: oklch(0.6 0.02 70);
-  --chart-3: oklch(0.5 0.02 70);
-  --chart-4: oklch(0.4 0.02 70);
-  --chart-5: oklch(0.3 0.02 70);
-  --sidebar: oklch(0.205 0.007 65);
-  --sidebar-foreground: oklch(0.91 0.012 85);
-  --sidebar-primary: oklch(0.79 0.13 72);
-  --sidebar-primary-foreground: oklch(0.18 0.02 60);
-  --sidebar-accent: oklch(0.265 0.008 65);
-  --sidebar-accent-foreground: oklch(0.91 0.012 85);
-  --sidebar-border: oklch(0.33 0.008 65);
-  --sidebar-ring: oklch(0.79 0.13 72);
+  --border: #30343b;
+  --input: #3a3f47;
+  --ring: #6ea8f2;
+
+  --chart-1: #0757b5;
+  --chart-2: #6ea8f2;
+  --chart-3: #ffd900;
+  --chart-4: #a6a6a6;
+  --chart-5: #e05f5f;
+  --sidebar: #0c0d10;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #0757b5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #202329;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #24272d;
+  --sidebar-ring: #6ea8f2;
+}
+
+/* Staff and operations screens: same dark system, a touch more contrast between panels. */
+.theme-ops {
+  --background: #0d0e11;
+  --surface: #16181c;
 }
 
 @layer base {
@@ -129,8 +193,32 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-ring);
+    outline: 2px solid var(--color-ring);
     outline-offset: 2px;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
+  }
+
+  /* Muted text helper used under the muted-foreground token */
+  .text-subtle {
+    color: #858b95;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+    }
+    .no-print {
+      display: none !important;
+    }
   }
 
   ::selection {

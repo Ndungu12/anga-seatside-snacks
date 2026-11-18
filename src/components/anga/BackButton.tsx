@@ -1,9 +1,9 @@
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import type { ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
 
-/** Wrap a <Link aria-label="..."> to get a large back arrow, or pass onClick. */
+/** Wrap a <Link aria-label="..."> to get a large back control, or pass onClick. */
 export function BackButton({
   children,
   onClick,
@@ -15,16 +15,16 @@ export function BackButton({
 }) {
   if (children) {
     return (
-      <Button asChild variant="ghost" size="icon">
+      <Button asChild variant="ghost" size="icon" className="text-foreground">
         {children}
       </Button>
     );
   }
   return (
     <Button variant="ghost" size="icon" onClick={onClick} aria-label={label ?? "Go back"}>
-      <ArrowLeft />
+      <ChevronLeft />
     </Button>
   );
 }
 
-export { ArrowLeft as BackIcon };
+export { ChevronLeft as BackIcon };

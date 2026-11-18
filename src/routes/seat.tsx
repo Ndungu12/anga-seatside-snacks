@@ -1,17 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Users } from "lucide-react";
 import { Fragment, useState } from "react";
 
-import { AppShell } from "@/components/anga/AppShell";
+import { AppShell, PageTitle } from "@/components/anga/AppShell";
+import { ActionBar } from "@/components/anga/CartBar";
 import { BackButton, BackIcon } from "@/components/anga/BackButton";
-import { LoadingBlock } from "@/components/anga/Notices";
+import { ClosedNotice, LoadingBlock } from "@/components/anga/Notices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { VENUES } from "@/lib/data";
 import { formatClock, nairobiMinutes, parseSeat, seatExists } from "@/lib/rules";
 import { findScreening, FILMS, seatLayoutFor } from "@/lib/schedule";
-import { startSession, useHydrated, useNow, useSession } from "@/lib/store";
+import { sessionFromScreening } from "@/lib/sessions";
+import { startSession, useHydrated, useNow, useOrderingWindow, useSession } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 type SeatSearch = { screening?: string | undefined };
@@ -23,7 +24,10 @@ export const Route = createFileRoute("/seat")({
   head: () => ({
     meta: [
       { title: "Your seat — Anga Seat Order" },
-      { name: "description", content: "Tell us your seat number so we can bring your order to you." },
+      {
+        name: "description",
+        content: "Tell us your seat number so we can bring your order to you.",
+      },
       { property: "og:title", content: "Your seat — Anga Seat Order" },
       { property: "og:description", content: "Enter your seat number at Anga Cinemas." },
       { property: "og:type", content: "website" },
@@ -42,7 +46,11 @@ function SeatPage() {
   const [typed, setTyped] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
 
-  const screening = screeningId ? findScreening(screeningId, nairobiMinutes(new Date(now))) : undefined;
+  const screening = screeningId
+    ? findScreening(screeningId, nairobiMinutes(new Date(now)))
+    : undefined;
+  // Warn before the seat step if this show has already passed the cutoff.
+  const orderWindow = useOrderingWindow(screening ? formatClock(screening.end) : undefined);
 
   if (!hydrated) {
     return (
@@ -63,8 +71,8 @@ function SeatPage() {
           </BackButton>
         }
       >
-        <h1 className="font-display text-2xl font-bold">We can't find that screening</h1>
-        <p className="mt-2 text-base text-muted-foreground">Please choose your show again.</p>
+        <PageTitle>We can't find that screening</PageTitle>
+        <p className="mt-2 text-[15px] text-muted-foreground">Please choose your show again.</p>
         <Button asChild className="mt-6">
           <Link to="/">Choose your show</Link>
         </Button>
@@ -95,15 +103,7 @@ function SeatPage() {
       setShowError(true);
       return;
     }
-    startSession({
-      venue: screening.venue,
-      screeningId: screening.id,
-      film: film.title,
-      screen: String(screening.screen),
-      start: formatClock(screening.start),
-      end: formatClock(screening.end),
-      seat: parsed.label,
-    });
+    startSession(sessionFromScreening(screening.venue, screening, parsed.label, null));
     navigate({ to: "/menu" });
   }
 
@@ -117,37 +117,69 @@ function SeatPage() {
           </Link>
         </BackButton>
       }
-    >
-      <div className="mx-auto max-w-md">
-        <section aria-label="Your show" className="rounded-2xl border border-border bg-card p-4">
-          <p className="text-lg font-bold leading-snug">{film.title}</p>
-          <p className="text-base text-muted-foreground">
-            {VENUES[screening.venue]} · Screen {screening.screen} · {formatClock(screening.start)} to{" "}
-            {formatClock(screening.end)}
+      footer={
+        <ActionBar>
+          <p className="min-w-0 flex-1 text-[15px]">
+            {selected ? (
+              <>
+                <span className="text-muted-foreground">Seat </span>
+                <span className="font-display text-xl font-semibold text-highlight">
+                  {selected}
+                </span>
+              </>
+            ) : (
+              <span className="text-muted-foreground">No seat chosen yet</span>
+            )}
           </p>
+          <Button onClick={confirm} className="min-w-40">
+            Continue to menu
+          </Button>
+        </ActionBar>
+      }
+    >
+      <div className="mx-auto max-w-xl">
+        <section
+          aria-label="Your show"
+          className="flex items-start justify-between gap-4 border-b border-border pb-4"
+        >
+          <div className="min-w-0">
+            <p className="truncate font-display text-base font-semibold">{film.title}</p>
+            <p className="text-[13px] text-muted-foreground tabular">
+              {VENUES[screening.venue]} · Screen {screening.screen} · {formatClock(screening.start)}
+              –{formatClock(screening.end)}
+            </p>
+          </div>
           <Link
             to="/show"
             search={{ venue: screening.venue }}
-            className="mt-1 inline-flex h-10 items-center text-sm text-primary underline underline-offset-4"
+            className="flex h-11 shrink-0 items-center text-[14px] font-medium text-link"
           >
-            Wrong show? Change it
+            Change
           </Link>
         </section>
 
-        <h1 className="mt-6 font-display text-2xl font-bold">What's your seat number?</h1>
-        <p className="mt-1 text-base text-muted-foreground">
-          It's printed on your ticket and on the back of the seat.
-        </p>
+        {orderWindow.closed ? (
+          <div className="mt-5">
+            <ClosedNotice end={formatClock(screening.end)} cutoff={orderWindow.cutoff} />
+          </div>
+        ) : null}
+
+        <div className="mt-6">
+          <PageTitle>What's your seat number?</PageTitle>
+          <p className="mt-1 text-[15px] text-muted-foreground">
+            It's on your ticket and on the back of the seat.
+          </p>
+        </div>
 
         <form
-          className="mt-4"
+          className="mt-5"
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
             confirm();
           }}
         >
-          <Label htmlFor="seat-input" className="text-base">
+          <Label htmlFor="seat-input" className="text-sm font-medium">
             Seat number
           </Label>
           <Input
@@ -163,36 +195,52 @@ function SeatPage() {
             autoCapitalize="characters"
             aria-invalid={showError ? true : undefined}
             aria-describedby="seat-hint"
-            className="mt-2 h-14 rounded-xl border-2 font-display text-2xl uppercase tracking-wider md:text-2xl"
+            className="mt-2 h-13 rounded-lg border-input bg-muted font-display text-xl font-semibold uppercase tracking-wider md:text-xl"
           />
           <p
             id="seat-hint"
-            className={showError ? "mt-2 text-base text-destructive" : "mt-2 text-sm text-muted-foreground"}
+            className={
+              showError ? "mt-2 text-sm text-destructive" : "mt-2 text-[13px] text-muted-foreground"
+            }
             role={showError ? "alert" : undefined}
           >
-            {showError ? errorText : "Type it, or tap your seat on the map below."}
+            {showError ? errorText : "Type it, or tap your seat on the map."}
           </p>
 
-          <p className="mt-4 flex gap-2 rounded-xl border border-border p-3 text-base">
-            <Users aria-hidden className="mt-0.5 size-5 shrink-0 text-primary" />
-            Ordering for a group? Use the seat of the person who will receive the order.
+          <p className="mt-5 border-l-2 border-input pl-4 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Ordering for a group?</span> Use the seat
+            of the person who will receive the order.
           </p>
         </form>
       </div>
 
-      <section aria-label={`Seat map for screen ${screening.screen}`} className="mt-6">
-        <p className="mb-2 text-center text-sm text-muted-foreground sm:hidden">
-          Scroll sideways to see all seats.
+      <section aria-label={`Seat map for screen ${screening.screen}`} className="mt-8">
+        <p className="mb-3 text-center text-[13px] text-muted-foreground sm:hidden">
+          Scroll sideways to see every seat.
         </p>
         <div className="-mx-4 overflow-x-auto px-4 pb-2">
           <div className="mx-auto w-max">
-            <div aria-hidden className="mx-auto mb-1 h-1.5 w-3/4 rounded-full bg-muted-foreground/50" />
-            <p aria-hidden className="mb-4 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            <div
+              aria-hidden
+              className="mx-auto mb-1 h-1 w-3/4 rounded-full bg-muted-foreground/40"
+            />
+            <p
+              aria-hidden
+              className="mb-5 text-center text-[11px] uppercase tracking-[0.3em] text-muted-foreground"
+            >
               Screen
             </p>
             {layout.rows.map((row) => (
-              <div key={row} role="group" aria-label={`Row ${row}`} className="mb-1 flex items-center gap-1">
-                <span aria-hidden className="w-6 text-center text-sm font-bold text-muted-foreground">
+              <div
+                key={row}
+                role="group"
+                aria-label={`Row ${row}`}
+                className="mb-1.5 flex items-center gap-1.5"
+              >
+                <span
+                  aria-hidden
+                  className="w-6 text-center text-[12px] font-medium text-muted-foreground"
+                >
                   {row}
                 </span>
                 {Array.from({ length: layout.seatsPerRow }, (_, i) => i + 1).map((n) => {
@@ -200,17 +248,17 @@ function SeatPage() {
                   const isSel = selected === label;
                   return (
                     <Fragment key={label}>
-                      {n === half + 1 ? <span aria-hidden className="w-4" /> : null}
+                      {n === half + 1 ? <span aria-hidden className="w-5" /> : null}
                       <button
                         type="button"
                         onClick={() => choose(label)}
                         aria-label={`Row ${row}, seat ${n}`}
                         aria-pressed={isSel}
                         className={cn(
-                          "size-11 rounded-lg border text-sm font-semibold tabular-nums",
+                          "size-10 rounded-t-md rounded-b-sm text-[12px] font-medium tabular transition-colors",
                           isSel
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card text-muted-foreground hover:border-primary",
+                            ? "bg-highlight font-semibold text-highlight-foreground"
+                            : "bg-muted text-muted-foreground hover:bg-secondary hover:text-foreground",
                         )}
                       >
                         {n}
@@ -218,7 +266,10 @@ function SeatPage() {
                     </Fragment>
                   );
                 })}
-                <span aria-hidden className="w-6 text-center text-sm font-bold text-muted-foreground">
+                <span
+                  aria-hidden
+                  className="w-6 text-center text-[12px] font-medium text-muted-foreground"
+                >
                   {row}
                 </span>
               </div>
@@ -226,23 +277,6 @@ function SeatPage() {
           </div>
         </div>
       </section>
-
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3">
-          <p className="min-w-0 flex-1 text-base">
-            {selected ? (
-              <>
-                Seat <span className="font-display text-xl font-bold text-primary">{selected}</span>
-              </>
-            ) : (
-              <span className="text-muted-foreground">No seat chosen yet</span>
-            )}
-          </p>
-          <Button size="lg" onClick={confirm}>
-            Continue to menu
-          </Button>
-        </div>
-      </div>
     </AppShell>
   );
 }

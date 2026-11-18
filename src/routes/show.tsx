@@ -1,33 +1,32 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, CircleAlert, Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { AppShell } from "@/components/anga/AppShell";
+import { AppShell, PageTitle, SectionLabel } from "@/components/anga/AppShell";
+import { Poster } from "@/components/anga/Poster";
 import { BackButton, BackIcon } from "@/components/anga/BackButton";
-import { LoadingBlock, VenuePicker } from "@/components/anga/Notices";
+import { LoadingBlock, Notice, VenuePicker } from "@/components/anga/Notices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toVenueId, VENUES } from "@/lib/data";
-import {
-  findCurrentScreenings,
-  formatClock,
-  nairobiMinutes,
-  screeningTiming,
-} from "@/lib/rules";
+import { campaignSearch, toVenueId, VENUES, type CampaignSearch } from "@/lib/data";
+import { findCurrentScreenings, formatClock, nairobiMinutes, screeningTiming } from "@/lib/rules";
 import { FILMS, getTodaySchedule, type Film, type Screening } from "@/lib/schedule";
 import { useHydrated, useNow } from "@/lib/store";
-import { cn } from "@/lib/utils";
 
-type ShowSearch = { venue?: string | undefined };
+type ShowSearch = { venue?: string | undefined } & CampaignSearch;
 
 export const Route = createFileRoute("/show")({
   validateSearch: (search: Record<string, unknown>): ShowSearch => ({
     venue: typeof search["venue"] === "string" ? search["venue"] : undefined,
+    ...campaignSearch(search),
   }),
   head: () => ({
     meta: [
       { title: "What are you watching? — Anga Seat Order" },
-      { name: "description", content: "Pick today's film at Anga Diamond or Anga Sky to order to your seat." },
+      {
+        name: "description",
+        content: "Pick today's film at Anga Diamond or Anga Sky to order to your seat.",
+      },
       { property: "og:title", content: "What are you watching? — Anga Seat Order" },
       { property: "og:description", content: "Choose your film and screening at Anga Cinemas." },
       { property: "og:type", content: "website" },
@@ -77,18 +76,26 @@ function ShowPage() {
     </BackButton>
   );
 
+  const { venue: _v, ...campaign } = search;
+  void _v;
+
   if (!venue) {
     return (
-      <AppShell back={backToVenues}>
-        <h1 className="mb-4 font-display text-2xl font-bold">Which cinema are you in?</h1>
-        <VenuePicker />
+      <AppShell back={backToVenues} wide>
+        <PageTitle eyebrow="Step 1 of 3">Which cinema are you in?</PageTitle>
+        <p className="mt-2 text-[15px] text-muted-foreground">
+          Choose your cinema to see what's showing now.
+        </p>
+        <div className="mt-6">
+          <VenuePicker search={campaign} />
+        </div>
       </AppShell>
     );
   }
 
   if (!hydrated) {
     return (
-      <AppShell back={backToVenues}>
+      <AppShell back={backToVenues} wide>
         <LoadingBlock />
       </AppShell>
     );
@@ -105,42 +112,56 @@ function ShowPage() {
 
   const picked = pickedFilm ? rows.find((r) => r.film.id === pickedFilm) : undefined;
 
-  // Step 2b: more than one screening matches, or none does.
+  // More than one screening matches, or none does.
   if (picked) {
-    const back = (
-      <BackButton onClick={() => setPickedFilm(null)} label="Back to the film list" />
-    );
+    const back = <BackButton onClick={() => setPickedFilm(null)} label="Back to the film list" />;
     return (
-      <AppShell back={back}>
-        <p className="text-sm text-muted-foreground">{VENUES[venue]}</p>
-        <h1 className="font-display text-2xl font-bold">{picked.film.title}</h1>
+      <AppShell back={back} wide>
+        <div className="flex gap-5">
+          <Poster title={picked.film.title} rating={picked.film.rating} className="w-28 shrink-0" />
+          <div className="min-w-0">
+            <PageTitle eyebrow={VENUES[venue]}>{picked.film.title}</PageTitle>
+            <p className="mt-1 text-[14px] text-muted-foreground">
+              {picked.film.rating} · {picked.film.runtime} min
+            </p>
+          </div>
+        </div>
 
         {picked.current.length === 0 ? (
-          <div role="alert" className="mt-6 rounded-2xl border-2 border-primary bg-primary-soft p-4">
-            <p className="flex items-center gap-2 text-lg font-bold text-primary">
-              <CircleAlert aria-hidden className="size-5 shrink-0" />
-              We can't find a current screening.
-            </p>
-            <p className="mt-1 text-base">Please ask a member of staff.</p>
-          </div>
+          <Notice
+            tone="attention"
+            role="alert"
+            title="We can't find a current screening."
+            className="mt-6"
+          >
+            Please ask a member of staff, or choose another film.
+          </Notice>
         ) : (
           <>
-            <p className="mt-4 text-lg">This film is on more than one screen. Which one are you in?</p>
-            <ul className="mt-4 grid gap-3">
-              {picked.current.map((s) => (
-                <li key={s.id}>
+            <p className="mt-6 text-[15px] text-muted-foreground">
+              This film is on more than one screen right now. Which one are you in?
+            </p>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {picked.current.map((sc) => (
+                <li key={sc.id}>
                   <button
                     type="button"
-                    onClick={() => goToSeat(s)}
-                    className="flex min-h-16 w-full items-center justify-between rounded-2xl border-2 border-border bg-card px-4 py-3 text-left hover:border-primary"
+                    onClick={() => goToSeat(sc)}
+                    className="group flex w-full items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-4 text-left transition-colors duration-150 hover:border-link/60"
                   >
                     <span>
-                      <span className="block font-display text-xl font-bold">Screen {s.screen}</span>
-                      <span className="text-base text-muted-foreground">
-                        {formatClock(s.start)} to {formatClock(s.end)} · {screeningTiming(s, nowMin)}
+                      <span className="block font-display text-lg font-extrabold">
+                        Screen {sc.screen}
+                      </span>
+                      <span className="text-[13px] text-muted-foreground tabular">
+                        {formatClock(sc.start)}–{formatClock(sc.end)} ·{" "}
+                        {screeningTiming(sc, nowMin)}
                       </span>
                     </span>
-                    <ChevronRight aria-hidden className="size-6 text-primary" />
+                    <ChevronRight
+                      aria-hidden
+                      className="size-5 text-muted-foreground group-hover:text-link"
+                    />
                   </button>
                 </li>
               ))}
@@ -148,7 +169,11 @@ function ShowPage() {
           </>
         )}
 
-        <Button variant="outline" className="mt-6 w-full" onClick={() => setPickedFilm(null)}>
+        <Button
+          variant="secondary"
+          className="mt-8 w-full sm:w-auto"
+          onClick={() => setPickedFilm(null)}
+        >
           Choose a different film
         </Button>
       </AppShell>
@@ -157,26 +182,70 @@ function ShowPage() {
 
   const q = query.trim().toLowerCase();
   const visible = q ? rows.filter((r) => r.film.title.toLowerCase().includes(q)) : rows;
+  const onNow = visible.filter((r) => r.current.length > 0);
+  const later = visible.filter((r) => r.current.length === 0);
+
+  const card = (row: FilmRow) => {
+    const live = row.current[0];
+    return (
+      <li key={row.film.id}>
+        <button
+          type="button"
+          onClick={() => pickFilm(row)}
+          className="group block w-full text-left"
+          aria-label={`${row.film.title}, ${row.film.rating}${live ? ", showing now" : ""}`}
+        >
+          <div className="relative">
+            <Poster
+              title={row.film.title}
+              rating={`${row.film.rating} · ${row.film.runtime} min`}
+              className="transition-transform duration-200 group-hover:-translate-y-0.5"
+            />
+            {live ? (
+              <span className="absolute left-2 top-2 flex items-center gap-1 rounded-md bg-highlight px-1.5 py-0.5 text-[11px] font-bold text-highlight-foreground">
+                <span className="size-1.5 rounded-full bg-highlight-foreground" /> Now
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 line-clamp-1 font-display text-[14px] font-bold">{row.film.title}</p>
+          <p className="text-[12px] text-muted-foreground tabular">
+            {live
+              ? `Screen ${live.screen} · ${screeningTiming(live, nowMin)}`
+              : row.screenings
+                  .map((x) => formatClock(x.start))
+                  .slice(0, 3)
+                  .join(" · ")}
+          </p>
+          {row.film.demo ? <p className="mt-0.5 text-[11px] text-subtle">{row.film.demo}</p> : null}
+        </button>
+      </li>
+    );
+  };
 
   return (
-    <AppShell back={backToVenues}>
-      <p className="text-sm text-muted-foreground">{VENUES[venue]} · today</p>
-      <h1 className="font-display text-2xl font-bold">What are you watching?</h1>
-
-      <div className="relative mt-4">
-        <Search aria-hidden className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
-        <label htmlFor="film-search" className="sr-only">
-          Search today's films
-        </label>
-        <Input
-          id="film-search"
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search films"
-          autoComplete="off"
-          className="h-14 rounded-xl border-2 pl-12 text-lg md:text-lg"
-        />
+    <AppShell back={backToVenues} wide>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <PageTitle eyebrow={`Step 2 of 3 · ${VENUES[venue]} · Today`}>
+          What are you watching?
+        </PageTitle>
+        <div className="relative w-full sm:w-72">
+          <Search
+            aria-hidden
+            className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground"
+          />
+          <label htmlFor="film-search" className="sr-only">
+            Search today's films
+          </label>
+          <Input
+            id="film-search"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search films"
+            autoComplete="off"
+            className="h-12 rounded-xl border-border bg-surface-2 pl-10 text-base md:text-base"
+          />
+        </div>
       </div>
 
       <p className="sr-only" role="status" aria-live="polite">
@@ -184,40 +253,29 @@ function ShowPage() {
       </p>
 
       {visible.length === 0 ? (
-        <p className="mt-8 text-center text-base text-muted-foreground">
+        <p className="mt-10 text-[15px] text-muted-foreground">
           No films match "{query}". Check the spelling or clear the search.
         </p>
       ) : (
-        <ul className="mt-4 grid gap-3">
-          {visible.map((row) => (
-            <li key={row.film.id}>
-              <button
-                type="button"
-                onClick={() => pickFilm(row)}
-                className={cn(
-                  "flex min-h-20 w-full items-center justify-between gap-3 rounded-2xl border-2 bg-card px-4 py-3 text-left hover:border-primary",
-                  row.current.length > 0 ? "border-border" : "border-border/60",
-                )}
-              >
-                <span className="min-w-0">
-                  <span className="block text-lg font-bold leading-snug">{row.film.title}</span>
-                  <span className="mt-0.5 block text-sm text-muted-foreground">
-                    {row.film.rating} · {row.film.runtime} min ·{" "}
-                    {row.screenings.map((s) => formatClock(s.start)).join(", ")}
-                  </span>
-                  {row.current.length > 0 ? (
-                    <span className="mt-1 inline-block rounded-md border border-primary px-1.5 py-0.5 text-xs font-semibold text-primary">
-                      Showing now
-                    </span>
-                  ) : null}
-                </span>
-                <ChevronRight aria-hidden className="size-6 shrink-0 text-primary" />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <>
+          {onNow.length ? (
+            <section className="mt-8">
+              <SectionLabel className="mb-3">Showing now</SectionLabel>
+              <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
+                {onNow.map(card)}
+              </ul>
+            </section>
+          ) : null}
+          {later.length ? (
+            <section className="mt-10">
+              <SectionLabel className="mb-3">Later today</SectionLabel>
+              <ul className="grid grid-cols-3 gap-3 opacity-80 sm:grid-cols-5 lg:grid-cols-6">
+                {later.map(card)}
+              </ul>
+            </section>
+          ) : null}
+        </>
       )}
     </AppShell>
   );
 }
-

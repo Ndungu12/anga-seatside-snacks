@@ -10,17 +10,37 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdmissionsRouteImport } from './routes/admissions'
+import { Route as BookingRouteImport } from './routes/booking'
 import { Route as CartRouteImport } from './routes/cart'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as MenuRouteImport } from './routes/menu'
+import { Route as MiniappRouteImport } from './routes/miniapp'
 import { Route as PayRouteImport } from './routes/pay'
+import { Route as PromoRouteImport } from './routes/promo'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as SeatRouteImport } from './routes/seat'
 import { Route as ShowRouteImport } from './routes/show'
+import { Route as SignageRouteImport } from './routes/signage'
+import { Route as SmsRouteImport } from './routes/sms'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as OrderOrderIdRouteImport } from './routes/order.$orderId'
+import { Route as QCodeRouteImport } from './routes/q.$code'
+import { Route as TTokenRouteImport } from './routes/t.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdmissionsRoute = AdmissionsRouteImport.update({
+  id: '/admissions',
+  path: '/admissions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingRoute = BookingRouteImport.update({
+  id: '/booking',
+  path: '/booking',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -28,14 +48,34 @@ const CartRoute = CartRouteImport.update({
   path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MenuRoute = MenuRouteImport.update({
   id: '/menu',
   path: '/menu',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MiniappRoute = MiniappRouteImport.update({
+  id: '/miniapp',
+  path: '/miniapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PayRoute = PayRouteImport.update({
   id: '/pay',
   path: '/pay',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoRoute = PromoRouteImport.update({
+  id: '/promo',
+  path: '/promo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SeatRoute = SeatRouteImport.update({
@@ -48,6 +88,16 @@ const ShowRoute = ShowRouteImport.update({
   path: '/show',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignageRoute = SignageRouteImport.update({
+  id: '/signage',
+  path: '/signage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SmsRoute = SmsRouteImport.update({
+  id: '/sms',
+  path: '/sms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffRoute = StaffRouteImport.update({
   id: '/staff',
   path: '/staff',
@@ -58,80 +108,160 @@ const OrderOrderIdRoute = OrderOrderIdRouteImport.update({
   path: '/order/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QCodeRoute = QCodeRouteImport.update({
+  id: '/q/$code',
+  path: '/q/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TTokenRoute = TTokenRouteImport.update({
+  id: '/t/$token',
+  path: '/t/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admissions': typeof AdmissionsRoute
+  '/booking': typeof BookingRoute
   '/cart': typeof CartRoute
+  '/demo': typeof DemoRoute
   '/menu': typeof MenuRoute
+  '/miniapp': typeof MiniappRoute
   '/pay': typeof PayRoute
+  '/promo': typeof PromoRoute
+  '/scan': typeof ScanRoute
   '/seat': typeof SeatRoute
   '/show': typeof ShowRoute
+  '/signage': typeof SignageRoute
+  '/sms': typeof SmsRoute
   '/staff': typeof StaffRoute
   '/order/$orderId': typeof OrderOrderIdRoute
+  '/q/$code': typeof QCodeRoute
+  '/t/$token': typeof TTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admissions': typeof AdmissionsRoute
+  '/booking': typeof BookingRoute
   '/cart': typeof CartRoute
+  '/demo': typeof DemoRoute
   '/menu': typeof MenuRoute
+  '/miniapp': typeof MiniappRoute
   '/pay': typeof PayRoute
+  '/promo': typeof PromoRoute
+  '/scan': typeof ScanRoute
   '/seat': typeof SeatRoute
   '/show': typeof ShowRoute
+  '/signage': typeof SignageRoute
+  '/sms': typeof SmsRoute
   '/staff': typeof StaffRoute
   '/order/$orderId': typeof OrderOrderIdRoute
+  '/q/$code': typeof QCodeRoute
+  '/t/$token': typeof TTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admissions': typeof AdmissionsRoute
+  '/booking': typeof BookingRoute
   '/cart': typeof CartRoute
+  '/demo': typeof DemoRoute
   '/menu': typeof MenuRoute
+  '/miniapp': typeof MiniappRoute
   '/pay': typeof PayRoute
+  '/promo': typeof PromoRoute
+  '/scan': typeof ScanRoute
   '/seat': typeof SeatRoute
   '/show': typeof ShowRoute
+  '/signage': typeof SignageRoute
+  '/sms': typeof SmsRoute
   '/staff': typeof StaffRoute
   '/order/$orderId': typeof OrderOrderIdRoute
+  '/q/$code': typeof QCodeRoute
+  '/t/$token': typeof TTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admissions'
+    | '/booking'
     | '/cart'
+    | '/demo'
     | '/menu'
+    | '/miniapp'
     | '/pay'
+    | '/promo'
+    | '/scan'
     | '/seat'
     | '/show'
+    | '/signage'
+    | '/sms'
     | '/staff'
     | '/order/$orderId'
+    | '/q/$code'
+    | '/t/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admissions'
+    | '/booking'
     | '/cart'
+    | '/demo'
     | '/menu'
+    | '/miniapp'
     | '/pay'
+    | '/promo'
+    | '/scan'
     | '/seat'
     | '/show'
+    | '/signage'
+    | '/sms'
     | '/staff'
     | '/order/$orderId'
+    | '/q/$code'
+    | '/t/$token'
   id:
     | '__root__'
     | '/'
+    | '/admissions'
+    | '/booking'
     | '/cart'
+    | '/demo'
     | '/menu'
+    | '/miniapp'
     | '/pay'
+    | '/promo'
+    | '/scan'
     | '/seat'
     | '/show'
+    | '/signage'
+    | '/sms'
     | '/staff'
     | '/order/$orderId'
+    | '/q/$code'
+    | '/t/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdmissionsRoute: typeof AdmissionsRoute
+  BookingRoute: typeof BookingRoute
   CartRoute: typeof CartRoute
+  DemoRoute: typeof DemoRoute
   MenuRoute: typeof MenuRoute
+  MiniappRoute: typeof MiniappRoute
   PayRoute: typeof PayRoute
+  PromoRoute: typeof PromoRoute
+  ScanRoute: typeof ScanRoute
   SeatRoute: typeof SeatRoute
   ShowRoute: typeof ShowRoute
+  SignageRoute: typeof SignageRoute
+  SmsRoute: typeof SmsRoute
   StaffRoute: typeof StaffRoute
   OrderOrderIdRoute: typeof OrderOrderIdRoute
+  QCodeRoute: typeof QCodeRoute
+  TTokenRoute: typeof TTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -143,11 +273,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admissions': {
+      id: '/admissions'
+      path: '/admissions'
+      fullPath: '/admissions'
+      preLoaderRoute: typeof AdmissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/booking': {
+      id: '/booking'
+      path: '/booking'
+      fullPath: '/booking'
+      preLoaderRoute: typeof BookingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cart': {
       id: '/cart'
       path: '/cart'
       fullPath: '/cart'
       preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/menu': {
@@ -157,11 +308,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MenuRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/miniapp': {
+      id: '/miniapp'
+      path: '/miniapp'
+      fullPath: '/miniapp'
+      preLoaderRoute: typeof MiniappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pay': {
       id: '/pay'
       path: '/pay'
       fullPath: '/pay'
       preLoaderRoute: typeof PayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo': {
+      id: '/promo'
+      path: '/promo'
+      fullPath: '/promo'
+      preLoaderRoute: typeof PromoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/seat': {
@@ -178,6 +350,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShowRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signage': {
+      id: '/signage'
+      path: '/signage'
+      fullPath: '/signage'
+      preLoaderRoute: typeof SignageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sms': {
+      id: '/sms'
+      path: '/sms'
+      fullPath: '/sms'
+      preLoaderRoute: typeof SmsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff': {
       id: '/staff'
       path: '/staff'
@@ -192,18 +378,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/q/$code': {
+      id: '/q/$code'
+      path: '/q/$code'
+      fullPath: '/q/$code'
+      preLoaderRoute: typeof QCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/t/$token': {
+      id: '/t/$token'
+      path: '/t/$token'
+      fullPath: '/t/$token'
+      preLoaderRoute: typeof TTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdmissionsRoute: AdmissionsRoute,
+  BookingRoute: BookingRoute,
   CartRoute: CartRoute,
+  DemoRoute: DemoRoute,
   MenuRoute: MenuRoute,
+  MiniappRoute: MiniappRoute,
   PayRoute: PayRoute,
+  PromoRoute: PromoRoute,
+  ScanRoute: ScanRoute,
   SeatRoute: SeatRoute,
   ShowRoute: ShowRoute,
+  SignageRoute: SignageRoute,
+  SmsRoute: SmsRoute,
   StaffRoute: StaffRoute,
   OrderOrderIdRoute: OrderOrderIdRoute,
+  QCodeRoute: QCodeRoute,
+  TTokenRoute: TTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
